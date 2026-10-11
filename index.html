@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Studio Histoire IA</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #fafafa; --panel: #ffffff; --panel-2: #f5f5f5; --border: #e5e5e5;
+  --ink: #1a1a1a; --ink-dim: #777; --ink-faint: #aaa;
+  --success: #2d8a4e; --error: #c0392b; --warn: #d4a017; --info: #4a6cf7;
+  --purple: #7c3aed;
+  --radius: 12px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  background: var(--bg); color: var(--ink); min-height: 100vh;
+  padding: 1rem; font-size: 15px; line-height: 1.5; max-width: 900px; margin: 0 auto; }
+header { text-align: center; margin-bottom: 1rem; }
+h1 { font-size: 1.3rem; font-weight: 500; margin-bottom: .2rem; }
+.subtitle { font-size: .75rem; color: var(--ink-dim); font-style: italic; }
+.info-banner { background: #eef4ff; border-left: 3px solid var(--info);
+  padding: .6rem .8rem; border-radius: 8px; font-size: .74rem; color: #2a3a5c;
+  margin-bottom: 1rem; line-height: 1.45; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: .3rem;
+  margin-bottom: 1rem; background: var(--panel); border-radius: var(--radius);
+  padding: .3rem; border: 1px solid var(--border); }
+.tab { padding: .55rem .2rem; border-radius: 8px; text-align: center; cursor: pointer;
+  font-weight: 600; color: var(--ink-dim); font-size: .65rem; }
+.tab.active { background: var(--ink); color: #fff; }
+.tab .tab-emoji { font-size: 1rem; display: block; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.section { background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+.section-header { padding: .8rem 1rem; cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center; }
+.section-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--ink-dim); font-weight: 600; }
+.section-title .badge { display: inline-block; margin-left: .4rem; padding: .1rem .4rem;
+  background: var(--ink); color: #fff; border-radius: 10px; font-size: .62rem; }
+.section-header .chevron { font-size: .7rem; color: var(--ink-faint); transition: transform .2s; }
+.section.open .section-header .chevron { transform: rotate(180deg); }
+.section-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+.section.open .section-body { max-height: 20000px; }
+.section-content { padding: 0 1rem 1rem; }
+.api-panel { background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+.api-panel.ok { border-color: var(--success); }
+.api-key-input { width: 100%; padding: .8rem; border-radius: 8px;
+  border: 1px solid var(--border); background: #fafafa; color: var(--ink);
+  font-family: monospace; font-size: .82rem; margin-bottom: .5rem; }
+.api-save-btn { width: 100%; padding: .75rem; border-radius: 8px; border: none;
+  background: var(--ink); color: #fff; font-size: .88rem; font-weight: 600;
+  cursor: pointer; margin-bottom: .5rem; font-family: inherit; }
+.api-status-line { font-size: .72rem; padding: .5rem .8rem;
+  border-radius: 6px; margin-bottom: .4rem; display: flex; align-items: center; gap: .5rem;
+  background: var(--panel-2); color: var(--ink-dim); }
+.api-status-line.ok { background: #e3f5e9; color: var(--success); font-weight: 600; }
+.api-status-line .status-dot { width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ink-faint); flex-shrink: 0; }
+.api-status-line.ok .status-dot { background: var(--success); }
+.api-hint { font-size: .7rem; color: var(--ink-dim); margin-top: .3rem; }
+.api-hint a { color: var(--ink); text-decoration: underline; }
+.control-label { display: block; font-size: .7rem; color: var(--ink-dim);
+  margin-bottom: .35rem; text-transform: uppercase; font-weight: 600; }
+input[type="text"], textarea, select {
+  width: 100%; padding: .75rem; border-radius: 8px; border: 1px solid var(--border);
+  background: #fafafa; color: var(--ink); font-family: inherit; font-size: .88rem; }
+textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--ink); }
+select { -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%231a1a1a' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat: no-repeat; background-position: right .9rem center; background-size: 10px; }
+.scene-card { background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; margin-bottom: .8rem; }
+.scene-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .7rem; }
+.scene-num { background: var(--purple); color: #fff; width: 26px; height: 26px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700; flex-shrink: 0; }
+.scene-title { font-size: .82rem; font-weight: 600; flex: 1; }
+.scene-status { font-size: .65rem; padding: .2rem .5rem; border-radius: 10px;
+  background: var(--panel-2); color: var(--ink-dim); text-transform: uppercase; font-weight: 600; }
+.scene-status.done { background: #e3f5e9; color: var(--success); }
+.scene-status.processing { background: #fff5e3; color: var(--warn); }
+.scene-status.failed { background: #fce3e3; color: var(--error); }
+.scene-remove { width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: .9rem;
+  color: var(--error); }
+.scene-field { margin-bottom: .6rem; }
+.scene-field label { display: block; font-size: .66rem; color: var(--ink-dim);
+  margin-bottom: .3rem; text-transform: uppercase; font-weight: 600; }
+.scene-field textarea { font-size: .82rem; min-height: 55px; }
+.file-zone { position: relative; border: 2px dashed var(--border); border-radius: 8px;
+  padding: 1rem; text-align: center; cursor: pointer; margin-bottom: .5rem; }
+.file-zone input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.file-zone.has-file { padding: .4rem; }
+.file-zone img, .file-zone video { width: 100%; max-height: 140px; object-fit: contain; border-radius: 6px; display: block; }
+.file-zone .upload-text { font-size: .75rem; }
+.file-zone .upload-hint { font-size: .62rem; color: var(--ink-dim); }
+.file-remove { padding: .3rem .6rem; border: 1px solid var(--border);
+  background: #fff; border-radius: 6px; font-size: .66rem; color: var(--error);
+  cursor: pointer; margin-top: .3rem; }
+.scene-video { margin-top: .5rem; border-radius: 8px; overflow: hidden; background: #000; }
+.scene-video video { width: 100%; display: block; }
+button.primary { width: 100%; padding: 1rem; border: none; border-radius: 12px;
+  background: var(--ink); color: #fff; font-size: .95rem; font-weight: 600;
+  cursor: pointer; margin-bottom: .7rem; }
+button.primary:disabled { opacity: .3; cursor: not-allowed; }
+button.purple { background: var(--purple); }
+button.stop { width: 100%; padding: .8rem; border: 1px solid var(--border);
+  border-radius: 12px; background: #fff; color: var(--error); font-size: .82rem;
+  font-weight: 600; cursor: pointer; margin-bottom: .7rem; display: none; }
+button.stop.visible { display: block; }
+.add-scene-btn { width: 100%; padding: .75rem; border: 2px dashed var(--border);
+  background: transparent; border-radius: 8px; font-size: .82rem; color: var(--ink-dim);
+  cursor: pointer; margin-bottom: .8rem; }
+.timer-box { background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: .9rem; margin-bottom: .8rem; display: none; }
+.timer-box.visible { display: block; }
+.timer-value { font-size: 2.2rem; font-weight: 700; text-align: center;
+  font-family: monospace; margin-bottom: .2rem; color: var(--purple); }
+.timer-label { font-size: .7rem; color: #777; text-align: center;
+  text-transform: uppercase; margin-bottom: .5rem; }
+.progress-bar { width: 100%; height: 6px; background: #f5f5f5;
+  border-radius: 3px; overflow: hidden; margin-top: .7rem; }
+.progress-bar .fill { height: 100%; background: var(--purple);
+  transition: width .3s; width: 0%; }
+.log-box { background: #0a0a12; border-radius: 8px; padding: .6rem;
+  margin-bottom: .8rem; font-family: monospace; font-size: .68rem;
+  color: #a8d8b0; line-height: 1.5; min-height: 40px;
+  max-height: 180px; overflow-y: auto; white-space: pre-wrap; }
+.story-videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .6rem; }
+.story-video-item { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #000; }
+.story-video-item video { width: 100%; display: block; }
+.story-video-item .caption { padding: .4rem .6rem; background: #fff;
+  font-size: .66rem; color: var(--ink-dim); display: flex;
+  justify-content: space-between; align-items: center; }
+.story-video-item .caption a { font-size: .62rem; padding: .2rem .4rem;
+  border-radius: 4px; background: var(--success); color: #fff; text-decoration: none; }
+.empty-state { text-align: center; padding: 1.5rem; color: var(--ink-dim); font-size: .82rem; }
+.tpl-category { margin-bottom: 1rem; }
+.tpl-cat-title { font-size: .66rem; font-weight: 700; color: var(--purple);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem;
+  padding-bottom: .25rem; border-bottom: 1px solid var(--border); }
+.tpl-item { padding: .65rem .8rem; background: #fafafa; border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; margin-bottom: .3rem; }
+.tpl-item:active { background: var(--panel-2); }
+.tpl-name { font-size: .8rem; font-weight: 600; margin-bottom: .1rem; }
+.tpl-desc { font-size: .64rem; color: var(--ink-dim); line-height: 1.3; }
+.scene-selector { display: flex; gap: .3rem; flex-wrap: wrap; margin-bottom: .7rem; }
+.scene-chip { padding: .35rem .65rem; border-radius: 20px; border: 1px solid var(--border);
+  background: #fff; font-size: .68rem; cursor: pointer; font-weight: 600; color: var(--ink-dim); }
+.scene-chip.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+.toast { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%) translateY(-100px);
+  background: #1a1a1a; color: #fff; padding: .7rem 1.2rem; border-radius: 8px;
+  font-size: .8rem; z-index: 1000; opacity: 0; transition: all .3s; max-width: 90vw; text-align: center; }
+.toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--error); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Studio Histoire IA</h1>
+  <p class="subtitle">Magic Hour · Templates pro</p>
+</header>
+
+<div class="info-banner">
+  <strong>Onglet 🎯 Templates</strong> : ~40 prompts prêts. Un clic = remplit la scène choisie.
+</div>
+
+<div class="api-panel" id="api-panel">
+  <input type="password" class="api-key-input" id="api-key-input" placeholder="Clé API Magic Hour">
+  <button type="button" class="api-save-btn" id="api-save-btn">Enregistrer la clé Magic Hour</button>
+  <div class="api-status-line" id="api-status-line">
+    <span class="status-dot"></span>
+    <span id="api-status-text">Aucune clé API enregistrée</span>
+  </div>
+  <div class="api-hint">Clé gratuite sur <a href="https://magichour.ai/developer?tab=api-keys" target="_blank">magichour.ai/developer</a></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="tab-story"><span class="tab-emoji">📖</span><div>Histoire</div></div>
+  <div class="tab" data-tab="tab-templates"><span class="tab-emoji">🎯</span><div>Templates</div></div>
+  <div class="tab" data-tab="tab-style"><span class="tab-emoji">🎨</span><div>Style</div></div>
+  <div class="tab" data-tab="tab-videos"><span class="tab-emoji">🎬</span><div>Vidéos</div></div>
+</div>
+
+<div class="tab-panel active" id="tab-story">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">📖 Titre de l'histoire</span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <input type="text" id="story-title" placeholder="Exemple : Course poursuite à Paris">
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">⏱️ Durée des vidéos</span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <select id="story-duration">
+        <option value="5">5 secondes</option>
+        <option value="6" selected>6 secondes</option>
+        <option value="7">7 secondes</option>
+        <option value="8">8 secondes</option>
+        <option value="10">10 secondes</option>
+      </select>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎬 Scènes <span class="badge" id="scenes-count">0</span></span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <div id="scenes-list"></div>
+      <button type="button" class="add-scene-btn" id="add-scene-btn">＋ Ajouter une scène</button>
+    </div></div>
+  </div>
+  <button type="button" class="primary purple" id="generate-all-btn" disabled>🎬 Générer l'histoire</button>
+  <button type="button" class="stop" id="stop-btn">⏹ Arrêter</button>
+  <div class="timer-box" id="timer-box">
+    <div class="timer-value" id="timer-value">00:00</div>
+    <div class="timer-label" id="timer-label">Prêt</div>
+    <div class="progress-bar"><div class="fill" id="progress-fill"></div></div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-templates">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎯 Scène à remplir</span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="scene-selector" id="scene-selector"></div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">📚 Bibliothèque de prompts</span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <div id="templates-list"></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-style">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎨 Style visuel global</span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <select id="global-style-select">
+        <option value="realistic">📸 Réaliste photographie pro</option>
+        <option value="ghibli">🌿 Studio Ghibli</option>
+        <option value="anime">🗾 Anime japonaise</option>
+        <option value="pixar">✨ Pixar 3D</option>
+        <option value="disney">🏰 Disney 2D</option>
+        <option value="cartoon">🎨 Cartoon 2D</option>
+        <option value="manga">🖤 Manga N&B</option>
+        <option value="netflix">🎬 Netflix cinématique</option>
+        <option value="jt">📺 JT News</option>
+        <option value="wes">🎩 Wes Anderson</option>
+        <option value="noir">🌓 Film Noir</option>
+        <option value="vhs">📼 VHS</option>
+        <option value="scifi">🛸 Sci-Fi</option>
+        <option value="horror">👻 Horreur</option>
+      </select>
+    </div></div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-videos">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎞️ Vidéos <span class="badge" id="videos-badge">0</span></span><span class="chevron">▼</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="log-box" id="log-box">Prêt.</div>
+      <div class="story-videos" id="story-videos"><div class="empty-state">Vos vidéos apparaîtront ici</div></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// ★★★ TA CLÉ API MAGIC HOUR EST ICI ★★★
+// ══════════════════════════════════════════════════════════════════
+var API_KEY_PRECONFIGURED = 'mhk_live_lJiH59lr7CGvL0q5JdfzSv2NzUy72hsW8kT4dKQKV2uVqRi3X0e485MgfouzDh5k3OxvU6sOB9msedBj';
+// ══════════════════════════════════════════════════════════════════
+
+var API_BASE = 'https://api.magichour.ai/v1';
+var STORAGE_KEY = 'studio_histoire_magichour_key_v4';
+
+var ART_STYLES = {
+  realistic: 'Cinematic', ghibli: 'Studio Ghibli', anime: 'Anime',
+  pixar: '3D Render', disney: 'Cartoon', cartoon: 'Cartoon', manga: 'Anime',
+  netflix: 'Cinematic', jt: 'Cinematic', wes: 'Cinematic', noir: 'Black and White',
+  vhs: 'Vintage', scifi: 'Sci-Fi', horror: 'Cinematic'
+};
+
+var STYLE_PROMPTS = {
+  realistic: 'cinematic photography, shot on 35mm film, natural lighting, photorealistic, subtle film grain, professional color grading.',
+  ghibli: 'Studio Ghibli animation aesthetic, Hayao Miyazaki style, hand-painted watercolor backgrounds, warm pastel palette.',
+  anime: 'modern Japanese anime style, cel-shaded characters, sharp ink outlines, vibrant colors, dramatic lighting.',
+  pixar: 'high-quality Pixar 3D animation style, subsurface scattering, soft cinematic lighting.',
+  disney: 'classic Disney 2D animation style, hand-drawn cel animation, elegant line work, soft rim lighting.',
+  cartoon: '2D cartoon animation style, bold black outlines, flat vibrant colors.',
+  manga: 'black and white Japanese manga style, stark ink outlines, screentones.',
+  netflix: 'Netflix original series cinematic look, dramatic key light, teal and orange color grading.',
+  jt: 'professional television news studio look, soft studio lighting, neutral background.',
+  wes: 'Wes Anderson cinematic style, perfect bilateral symmetry, pastel color palette.',
+  noir: 'classic film noir aesthetic, high contrast black and white, chiaroscuro.',
+  vhs: 'vintage VHS aesthetic, analog artifacts, scan lines, chromatic aberration.',
+  scifi: 'science-fiction cinematic aesthetic, cool blue and cyan lighting, anamorphic look.',
+  horror: 'cinematic horror aesthetic, high contrast, deep shadows, desaturated palette.'
+};
+
+var TEMPLATES = [
+  { category: '🎬 Cinéma Hollywoodien', items: [
+    { name: 'Blockbuster héroïque', desc: 'Héros qui se retourne au ralenti', prompt: 'Cinematic hero shot, slow motion. A lone figure slowly turns to face the camera. Standing on a rooftop at golden hour. Low angle camera tracking forward. Warm golden sunlight with lens flare. Epic, determined mood. 35mm film grain, shallow depth of field, anamorphic lens.' },
+    { name: 'Duel au coucher de soleil', desc: 'Deux personnages face à face', prompt: 'Western-style cinematic shot. Two figures stand facing each other, tension in the air. Dusty desert at sunset. Wide static shot, symmetrical composition. Orange and red sky, long shadows. Tense, dramatic mood. 35mm film grain, Sergio Leone style.' },
+    { name: 'Moment romantique sous la pluie', desc: 'Couple sous la pluie', prompt: 'Romantic cinematic moment. Two people stand close together in soft rain, one holding an umbrella. Empty city street at night. Slow dolly-in, shallow depth of field. Wet pavement reflecting warm streetlights, bokeh in background. Tender, melancholic mood.' },
+    { name: 'Course-poursuite urbaine', desc: 'Voiture qui dérape', prompt: 'High-octane car chase shot. A black sports car drifts around a corner at high speed. Narrow European street at night. Mounted camera following the car, hard cut to close-up on tires. Neon lights reflecting off wet asphalt. Thrilling, kinetic mood.' },
+    { name: 'Révélation dramatique', desc: 'Personnage qui découvre', prompt: 'Cinematic reveal shot. A character slowly lifts their head, eyes widening in shock. Dark interior, single window with light. Slow push-in on the face, then cut to reverse shot. Dramatic side lighting, half the face i
